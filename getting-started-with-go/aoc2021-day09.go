@@ -22,8 +22,7 @@ func test_input() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	lowPts := findLowPoints(h_map)
-	fmt.Println("TEST:", riskLevel(&h_map, &lowPts))
+	fmt.Println("TEST:", findRiskLevel(&h_map))
 }
 
 func parseInput(r io.Reader) ([][]int, error) {
@@ -55,54 +54,41 @@ func parseInput(r io.Reader) ([][]int, error) {
 	return out, nil
 }
 
-type Point struct {
-	x int
-	y int
-}
+func findRiskLevel(hMap *[][]int) int {
+	var out int
 
-func findLowPoints(hMap [][]int) []Point {
-	var points []Point
-	fmt.Println("Len x", len(hMap), "len y", len(hMap[0]))
-	for i := 0; i < len(hMap); i++ {
-		for j := 0; j < len(hMap[0]); j++ {
+	for i := 0; i < len(*hMap); i++ {
+		for j := 0; j < len((*hMap)[0]); j++ {
 			lowest := true
-			target := hMap[i][j]
+			target := (*hMap)[i][j]
 
-			if i > 0 && target >= hMap[i-1][j] {
+			if i > 0 && target >= (*hMap)[i-1][j] {
 				lowest = false
 			}
 
-			if j < len(hMap[0])-1 && target >= hMap[i][j+1] {
+			if j < len((*hMap)[0])-1 && target >= (*hMap)[i][j+1] {
 				lowest = false
 			}
 
-			if i < len(hMap)-1 && target >= hMap[i+1][j] {
+			if i < len(*hMap)-1 && target >= (*hMap)[i+1][j] {
 				lowest = false
 			}
 
-			if j > 0 && target >= hMap[i][j-1] {
+			if j > 0 && target >= (*hMap)[i][j-1] {
 				lowest = false
 			}
 
 			if lowest {
-				points = append(points, Point{i, j})
+				out += 1 + (*hMap)[i][j]
 			}
 
 		}
-	}
-	return points
-}
-
-func riskLevel(hMap *[][]int, pts *[]Point) int {
-	out := 0
-	for _, pt := range *pts {
-		out += 1 + (*hMap)[pt.x][pt.y]
 	}
 	return out
 }
 
 func main() {
-	// test_input()
+	test_input()
 	content, err := ioutil.ReadFile("input09.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -111,6 +97,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	lowPts := findLowPoints(hMap)
-	fmt.Println("Risk Level:", riskLevel(&hMap, &lowPts))
+	fmt.Println("Risk Level:", findRiskLevel(&hMap))
 }
