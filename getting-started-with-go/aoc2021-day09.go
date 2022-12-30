@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -82,7 +83,13 @@ func NewPos(x int, y int) Position {
 	return Position{x, y}
 }
 
-func basinContains(basin *[]Position, o Position) bool {
+type Basin []Position
+
+func NewBasin() Basin {
+	return make([]Position, 0)
+}
+
+func (basin *Basin) contains(o Position) bool {
 	for _, el := range *basin {
 		if el == o {
 			return true
@@ -91,35 +98,61 @@ func basinContains(basin *[]Position, o Position) bool {
 	return false
 }
 
-func findBasinSize(hMap *[][]int, basin *[]Position, this Position) int {
+func findBasinSize(hMap *[][]int, basin *Basin, this Position) int {
 	if (*hMap)[this.y][this.x] >= 9 {
 		return 0
 	}
 
-	if !basinContains(basin, this) {
-		*basin = append(*basin, this)
-	}
+	*basin = append(*basin, this)
 
 	// TOP
-	if this.y > 0 && !basinContains(basin, NewPos(this.x, this.y-1)) {
+	if this.y > 0 && !basin.contains(NewPos(this.x, this.y-1)) {
 		findBasinSize(hMap, basin, NewPos(this.x, this.y-1))
 	}
 
 	// RIGHT
-	if this.x < len((*hMap)[0])-1 && !basinContains(basin, NewPos(this.x+1, this.y)) {
+	if this.x < len((*hMap)[0])-1 && !basin.contains(NewPos(this.x+1, this.y)) {
 		findBasinSize(hMap, basin, NewPos(this.x+1, this.y))
 	}
 	// BOTTOM
-	if this.y < len(*hMap)-1 && !basinContains(basin, NewPos(this.x, this.y+1)) {
+	if this.y < len(*hMap)-1 && !basin.contains(NewPos(this.x, this.y+1)) {
 		findBasinSize(hMap, basin, NewPos(this.x, this.y+1))
 	}
 
 	// LEFT
-	if this.x > 0 && !basinContains(basin, NewPos(this.x-1, this.y)) {
+	if this.x > 0 && !basin.contains(NewPos(this.x-1, this.y)) {
 		findBasinSize(hMap, basin, NewPos(this.x-1, this.y))
 	}
 
 	return len(*basin)
+}
+
+func _isInOneBasin(basins *[]Basin, position Position) bool {
+	for _, basin := range *basins {
+		if basin.contains(position) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func threeLargestBasins(hMap *[][]int) int {
+	sizes := make([]int, 0)
+	basins := make([]Basin, 0)
+	for i := 0; i < len(*hMap); i++ {
+		for j := 0; j < len((*hMap)[0]); j++ {
+			pos := NewPos(j, i)
+			if !_isInOneBasin(&basins, pos) {
+				basin := NewBasin()
+				sizes = append(sizes, findBasinSize(hMap, &basin, pos))
+				basins = append(basins, basin)
+			}
+		}
+	}
+
+	sort.Ints(sizes[:])
+	return sizes[len(sizes)-1] * sizes[len(sizes)-2] * sizes[len(sizes)-3]
 }
 
 func main() {
@@ -136,6 +169,7 @@ func main() {
 	fmt.Println("Risk Level:", findRiskLevel(&hMap))
 
 	test_part2()
+	fmt.Println("Three largest basins:", threeLargestBasins(&hMap))
 }
 
 var INPUT = `2199943210
@@ -157,11 +191,5 @@ func test_part2() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	pos := make([]Position, 0)
-	fmt.Println(findBasinSize(&h_map, &pos, NewPos(0, 0)))
-	fmt.Println(pos)
-
-	pos = make([]Position, 0)
-	fmt.Println(findBasinSize(&h_map, &pos, NewPos(2, 2)))
-	fmt.Println(pos)
+	fmt.Println("TEST:", threeLargestBasins(&h_map))
 }
