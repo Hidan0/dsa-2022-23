@@ -5,25 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
-
-func test_input() {
-	var INPUT = `2199943210
-3987894921
-9856789892
-8767896789
-9899965678`
-
-	h_map, err := parseInput(strings.NewReader(INPUT))
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("TEST:", findRiskLevel(&h_map))
-}
 
 func parseInput(r io.Reader) ([][]int, error) {
 	scanner := bufio.NewScanner(r)
@@ -88,14 +74,29 @@ func findRiskLevel(hMap *[][]int) int {
 }
 
 func main() {
-	test_input()
-	content, err := ioutil.ReadFile("input09.txt")
+	test_part1()
+	f, err := os.Open("input09.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	hMap, err := parseInput(strings.NewReader(string(content)))
+
+	hMap, err := parseInput(bufio.NewReader(f))
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Risk Level:", findRiskLevel(&hMap))
+}
+
+var INPUT = `2199943210
+3987894921
+9856789892
+8767896789
+9899965678`
+
+func test_part1() {
+	h_map, err := parseInput(strings.NewReader(INPUT))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("TEST:", findRiskLevel(&h_map))
 }
