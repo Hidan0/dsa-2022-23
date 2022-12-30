@@ -73,6 +73,55 @@ func findRiskLevel(hMap *[][]int) int {
 	return out
 }
 
+type Position struct {
+	x int
+	y int
+}
+
+func NewPos(x int, y int) Position {
+	return Position{x, y}
+}
+
+func basinContains(basin *[]Position, o Position) bool {
+	for _, el := range *basin {
+		if el == o {
+			return true
+		}
+	}
+	return false
+}
+
+func findBasinSize(hMap *[][]int, basin *[]Position, this Position) int {
+	if (*hMap)[this.y][this.x] >= 9 {
+		return 0
+	}
+
+	if !basinContains(basin, this) {
+		*basin = append(*basin, this)
+	}
+
+	// TOP
+	if this.y > 0 && !basinContains(basin, NewPos(this.x, this.y-1)) {
+		findBasinSize(hMap, basin, NewPos(this.x, this.y-1))
+	}
+
+	// RIGHT
+	if this.x < len((*hMap)[0])-1 && !basinContains(basin, NewPos(this.x+1, this.y)) {
+		findBasinSize(hMap, basin, NewPos(this.x+1, this.y))
+	}
+	// BOTTOM
+	if this.y < len(*hMap)-1 && !basinContains(basin, NewPos(this.x, this.y+1)) {
+		findBasinSize(hMap, basin, NewPos(this.x, this.y+1))
+	}
+
+	// LEFT
+	if this.x > 0 && !basinContains(basin, NewPos(this.x-1, this.y)) {
+		findBasinSize(hMap, basin, NewPos(this.x-1, this.y))
+	}
+
+	return len(*basin)
+}
+
 func main() {
 	test_part1()
 	f, err := os.Open("input09.txt")
@@ -85,6 +134,8 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("Risk Level:", findRiskLevel(&hMap))
+
+	test_part2()
 }
 
 var INPUT = `2199943210
@@ -99,4 +150,18 @@ func test_part1() {
 		log.Fatal(err)
 	}
 	fmt.Println("TEST:", findRiskLevel(&h_map))
+}
+
+func test_part2() {
+	h_map, err := parseInput(strings.NewReader(INPUT))
+	if err != nil {
+		log.Fatal(err)
+	}
+	pos := make([]Position, 0)
+	fmt.Println(findBasinSize(&h_map, &pos, NewPos(0, 0)))
+	fmt.Println(pos)
+
+	pos = make([]Position, 0)
+	fmt.Println(findBasinSize(&h_map, &pos, NewPos(2, 2)))
+	fmt.Println(pos)
 }
